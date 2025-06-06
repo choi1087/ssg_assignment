@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@Tag(name = "RESET", description = "리셋 API")
+@Tag(name = "RESET", description = "(선택) 리셋 API")
 @RequestMapping("/reset")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
