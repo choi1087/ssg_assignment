@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import static com.ssg.market.global.response.SuccessResponse.success;
 
 @RestController
-@Tag(name = "ORDER_ITEM_CANCEL", description = "주문 취소 API")
+@Tag(name = "ORDER_ITEM_UPDATE", description = "주문 목록 수정 API")
 @RequestMapping("/order/cancel")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")

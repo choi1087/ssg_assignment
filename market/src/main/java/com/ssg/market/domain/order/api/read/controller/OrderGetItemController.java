@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import static com.ssg.market.global.response.SuccessResponse.success;
 
 @RestController
-@Tag(name = "ORDER", description = "주문 조회 API")
+@Tag(name = "ORDER_READ", description = "주문 조회 API")
 @RequestMapping("/order")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
