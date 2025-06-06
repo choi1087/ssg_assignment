@@ -87,7 +87,7 @@ class OrderItemCancelServiceTest {
         assertThat(resDTO.getRefundPrice()).isEqualTo(orderItem.getFinalPrice());
 
         assertThat(item.getStock()).isEqualTo(originStock + VALID_ITEM_QUANTITY);
-        assertThat(order.getTotalPrice()).isEqualTo(originTotalPrice + orderItem.getFinalPrice());
+        assertThat(order.getTotalPrice()).isEqualTo(originTotalPrice - orderItem.getFinalPrice());
         assertThat(orderItem.getStatus()).isEqualTo(OrderItemStatus.CANCELLED);
     }
 

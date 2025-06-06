@@ -36,6 +36,6 @@ public class Order extends BaseTimeEntity {
     }
 
     public void refund(Integer refundPrice) {
-        this.totalPrice += refundPrice;
+        this.totalPrice -= refundPrice;
     }
 }
