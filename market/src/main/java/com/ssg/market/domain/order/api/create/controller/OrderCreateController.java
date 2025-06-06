@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@Tag(name = "ORDER_CREATE", description = "주문 생성 API")
+@Tag(name = "ORDER_CREATE", description = "(필수) 주문 생성 API")
 @RequestMapping("/order/create")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*")
