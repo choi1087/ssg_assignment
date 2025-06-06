@@ -1,0 +1,131 @@
+name: CI/CD - Build, Push to ECR, Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # 첫 번째 job : Docker 이미지 빌드 및 푸시
+  build-and-push:
+    # Github 호스팅 runner 사용
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # market 디렉토리 기준으로 모든 run 명령 실행
+        working-directory: market
+
+    steps:
+      # Github 리포지토리 코드를 runner에 clone
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Java 17 환경 설정
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Gradle 권한 부여
+      - name: Grant execute permission
+        run: chmod +x ./gradlew
+
+      # 테스트 + 빌드
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      # AWS 인증
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
+
+      # ECR 로그인
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Extract and auto-increment version
+        id: versioning
+        run: |
+          # ECR에 있는 기존 v1.x 형식의 태그를 가져와 가장 마지막 버전을 구함
+          TAG_PREFIX="v"
+          EXISTING_TAGS=$(aws ecr list-images --repository-name ${{secrets.ECR_REPOSITORY}} --region ${{secrets.AWS_REGION}} --query 'imageIds[*].imageTag' --output text | tr '\t' '\n' | grep "^$TAG_PREFIX" || echo "")
+          
+          # 가장 마지막 태그를 기준으로 minor 버전 1 증가
+          if [[ -z "$EXISTING_TAGS" ]]; then
+            NEXT_VERSION="${TAG_PREFIX}1.0"
+          else
+            LAST_VERSION=$(echo "$EXISTING_TAGS" | sort -V | tail -n 1 | sed "s/^$TAG_PREFIX//")
+            MAJOR=$(echo $LAST_VERSION | cut -d. -f1)
+            MINOR=$(echo $LAST_VERSION | cut -d. -f2)
+            NEXT_VERSION="${TAG_PREFIX}${MAJOR}.$((MINOR + 1))"
+          fi
+          
+          # 다음 단계에서 사용할 수 있게 설정 
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          
+          # 파일로도 저장 (deploy job에서 사용)
+          echo "$NEXT_VERSION" > version.txt
+
+      - name: Docker Build & Push
+        run: |
+          # Docker 이미지 빌드 및 ECR 태그 지정 후 push
+          docker build -t ${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}} .
+          docker tag ${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}} ${{secrets.ECR_REGISTRY}}/${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}}
+          docker push ${{secrets.ECR_REGISTRY}}/${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}}
+
+      - name: Upload version artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: version # deploy job에서 다운로드할 이름
+          path: market/version.txt # version 파일을 아티팩트로 저장
+
+  # 두 번째 job: EC2에 배포
+  deploy:
+    # build-and-push job(첫 번째 job)이 끝나고 실행됨
+    needs: build-and-push
+    runs-on: ubuntu-latest
+#    defaults:
+#      run:
+#        working-directory: market
+
+    steps:
+      # 위에서 저장한 version.txt 다운로드
+      - name: Download version artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: version
+
+      # 파일에서 버전을 읽고, 다음 step에서 사용 가능하도록 등록
+      - name: Read version from file
+        id: read_version
+        run: |
+          VERSION=$(cat version.txt) 
+          echo "VERSION=$VERSION" >> $GITHUB_ENV 
+
+      - name: Connect to EC2 and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{secrets.EC2_HOST}}
+          username: ${{secrets.EC2_USER}}
+          key: ${{secrets.EC2_SSH_KEY}}
+          script: |
+            export VERSION=${{ env.VERSION }}
+            echo "Deploying version: $VERSION"
+
+            # Docker ECR 로그인
+            aws ecr get-login-password --region ${{secrets.AWS_REGION}} | docker login --username AWS --password-stdin ${{secrets.ECR_REGISTRY}}
+
+            # .env 파일에 태그 정보 기록 -> docker-compose.yml 에서 참조
+            # .env 파일에서 IMAGE_TAG 값만 변경
+            sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG='"$VERSION"'/' ~/dev/docker-stacks/ssg/.env
+
+            # 컨테이너 재배포
+            cd ~/dev/docker-stacks/ssg
+            docker-compose pull
+            docker-compose down
+            docker-compose up -d
