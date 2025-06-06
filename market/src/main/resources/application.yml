@@ -1,5 +1,11 @@
 server:
   port: 8080
+  servlet:
+    context-path: /ssg
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   h2:
@@ -18,8 +24,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        show_sql: true
-        format_sql: true
+#        show_sql: true
+#        format_sql: true
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
