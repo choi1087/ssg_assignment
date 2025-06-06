@@ -14,5 +14,5 @@ import java.util.List;
 public class OrderCreateReqListDTO {
     @NotEmpty(message = "주문 항목은 1개 이상이어야 합니다.")
     @Valid
-    private List<OrderCreateReqDTO> ordeReqDTOList;
+    private List<OrderCreateReqDTO> orderReqDTOList;
 }

@@ -39,6 +39,6 @@ public class OrderCreateController {
     public ResponseEntity<SuccessResponse<OrderCreateResDTO>> createOrder(
             @RequestBody @Valid OrderCreateReqListDTO reqDTOListDTO
     ) {
-        return SuccessResponse.success(orderCreateService.createOrder(reqDTOListDTO.getOrdeReqDTOList()));
+        return SuccessResponse.success(orderCreateService.createOrder(reqDTOListDTO.getOrderReqDTOList()));
     }
 }
