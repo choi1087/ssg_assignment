@@ -122,7 +122,7 @@ jobs:
 
             # .env 파일에 태그 정보 기록 -> docker-compose.yml 에서 참조
             # .env 파일에서 IMAGE_TAG 값만 변경
-            sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG='"$VERSION"'/' ~/dev/docker-stacks/spring/.env
+            sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG='"$VERSION"'/' ~/dev/docker-stacks/ssg/.env
 
             # 컨테이너 재배포
             cd ~/dev/docker-stacks/spring
