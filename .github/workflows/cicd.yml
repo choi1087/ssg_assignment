@@ -125,7 +125,7 @@ jobs:
             sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG='"$VERSION"'/' ~/dev/docker-stacks/ssg/.env
 
             # 컨테이너 재배포
-            cd ~/dev/docker-stacks/spring
+            cd ~/dev/docker-stacks/ssg
             docker-compose pull
             docker-compose down
             docker-compose up -d
