@@ -8,6 +8,8 @@ server:
       force: true
 
 spring:
+  profiles:
+    active: local
   h2:
     console:
       enabled: true
@@ -24,8 +26,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-#        show_sql: true
-#        format_sql: true
+        show_sql: true
+        format_sql: true
 
 springdoc:
   default-consumes-media-type: application/json;charset=UTF-8
@@ -38,3 +40,6 @@ springdoc:
     operations-sorter: method
   cache:
     disabled: true
+
+swagger:
+  server-url: http://localhost:8080/ssg
