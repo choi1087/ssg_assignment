@@ -18,7 +18,7 @@ public class SuccessResponse<T> {
 
     public static <T> SuccessResponse<T> response(boolean success, T data) {
         return SuccessResponse.<T>builder()
-                .timeStamp(ZonedDateTime.now(TimeZone.getTimeZone("UTC").toZoneId()))
+                .timeStamp(ZonedDateTime.now(TimeZone.getTimeZone("Asia/Seoul").toZoneId()))
                 .success(success)
                 .data(data)
                 .build();

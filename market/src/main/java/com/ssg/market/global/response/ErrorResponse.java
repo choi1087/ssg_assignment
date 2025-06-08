@@ -28,7 +28,7 @@ public class ErrorResponse {
         this.code = code;
         this.message = message;
         this.path = path;
-        this.timeStamp = ZonedDateTime.now(TimeZone.getTimeZone("UTC").toZoneId());
+        this.timeStamp = ZonedDateTime.now(TimeZone.getTimeZone("Asia/Seoul").toZoneId());
     }
 
     public static ErrorResponse of(ErrorCode errorCode, String path) {
