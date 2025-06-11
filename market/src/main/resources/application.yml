@@ -8,7 +8,6 @@ server:
       force: true
 
 spring:
-  profiles:
 
   h2:
     console:
