@@ -74,7 +74,7 @@ jobs:
       - name: Docker Build & Push
         run: |
           # Docker 이미지 빌드 및 ECR 태그 지정 후 push
-          docker build -t ${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}} .
+          docker build --build-arg PROFILE=dev -t ${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}} .
           docker tag ${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}} ${{secrets.ECR_REGISTRY}}/${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}}
           docker push ${{secrets.ECR_REGISTRY}}/${{secrets.ECR_REPOSITORY}}:${{env.NEXT_VERSION}}
 
